@@ -1,0 +1,69 @@
+package com.example.demo.controller;
+
+import com.example.demo.model.User;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.RestTemplate;
+
+import java.util.*;
+
+@RestController
+@RequestMapping("/users")
+public class UserController {
+
+    @Autowired
+    private RestTemplate restTemplate;
+
+    private List<User> users = Arrays.asList(
+        new User(1L, "John Doe", "john@email.com", "081234567890"),
+        new User(2L, "Jane Smith", "jane@email.com", "081234567891"),
+        new User(3L, "Bob Johnson", "bob@email.com", "081234567892")
+    );
+
+    @GetMapping
+    public List<User> getAllUsers() {
+        return users;
+    }
+
+    @GetMapping("/{id}")
+    public User getUserById(@PathVariable Long id) {
+        return users.stream()
+                .filter(user -> user.getId().equals(id))
+                .findFirst()
+                .orElse(null);
+    }
+
+    @GetMapping("/info")
+    public String getServiceInfo() {
+        return "User Service running on port 8036";
+    }
+
+    // Panggil product service via API Gateway (localhost:8037)
+    @GetMapping("/products")
+    public Object getUserProducts() {
+        try {
+            // Panggil API Gateway untuk produk
+            Object products = restTemplate.getForObject("http://api-gateway/products", Object.class);
+            return products;
+        } catch (Exception e) {
+            return Map.of("error", "Gagal menghubungi Product Service via API Gateway", "message", e.getMessage());
+        }
+    }
+
+    // Dashboard user + status product service info
+    @GetMapping("/{id}/dashboard")
+    public Map<String, Object> getUserDashboard(@PathVariable Long id) {
+        Map<String, Object> dashboard = new HashMap<>();
+        User user = getUserById(id);
+        dashboard.put("user", user != null ? user : "User not found");
+
+        try {
+            String productInfo = restTemplate.getForObject("http://api-gateway/products/info", String.class);
+            dashboard.put("productServiceStatus", productInfo);
+        } catch (Exception e) {
+            dashboard.put("productServiceStatus", "Product Service unavailable: " + e.getMessage());
+        }
+
+        return dashboard;
+    }
+}

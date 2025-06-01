@@ -1,0 +1,8 @@
+# Port untuk User ServiceMore actions
+server.port=8036
+
+# Nama service (harus unik)
+spring.application.name=user-service
+
+# Alamat Eureka Server untuk register
+eureka.client.service-url.defaultZone=http://localhost:8734/eureka/

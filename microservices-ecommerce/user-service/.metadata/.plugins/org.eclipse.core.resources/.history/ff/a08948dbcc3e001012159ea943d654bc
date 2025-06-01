@@ -1,0 +1,38 @@
+package com.example.demo.controller;
+
+import org.springframework.web.bind.annotation.*;
+import com.example.demo.model.User;
+import java.util.*;
+
+@RestController
+@RequestMapping("/users")  // Base URL: /users
+public class UserController {
+    
+    // Data dummy untuk simulasi database
+    private List<User> users = Arrays.asList(
+        new User(1L, "John Doe", "john@email.com", "081234567890"),
+        new User(2L, "Jane Smith", "jane@email.com", "081234567891"),
+        new User(3L, "Bob Johnson", "bob@email.com", "081234567892")
+    );
+    
+    // GET /users - Ambil semua user
+    @GetMapping
+    public List<User> getAllUsers() {
+        return users;
+    }
+    
+    // GET /users/{id} - Ambil user berdasarkan ID
+    @GetMapping("/{id}")
+    public User getUserById(@PathVariable Long id) {
+        return users.stream()
+                   .filter(user -> user.getId().equals(id))
+                   .findFirst()
+                   .orElse(null);
+    }
+    
+    // GET /users/info - Info service
+    @GetMapping("/info")
+    public String getServiceInfo() {
+        return "User Service is running on port 8081";
+    }
+}
